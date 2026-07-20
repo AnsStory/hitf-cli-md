@@ -28,12 +28,6 @@ hias -v
 hias --help
 ```
 
-卸载前清理全局配置：
-
-```sh
-hias uninstall -g
-```
-
 只清理全局配置，不卸载包：
 
 ```sh
@@ -56,7 +50,7 @@ hias clear-config
 | `cache-import [file]`   | `tci` | 导入 XLSX/TSV/TXT 翻译表到缓存 |
 | `codesnippets [ide]`    | -     | 生成 IDE 代码片段              |
 | `setting`               | -     | 创建项目级翻译配置             |
-| `global-setting`        | -     | 创建全局翻译配置               |
+| `global-config`         | -     | 创建全局翻译配置               |
 | `rollback`              | -     | 回滚翻译输出或原文件           |
 | `gitignore`             | -     | 将 `.hias` 写入 `.gitignore`   |
 | `close-port <ports...>` | -     | 关闭占用端口的进程             |
@@ -164,6 +158,7 @@ hias setting
     "i18nImport": "",
     "extensions": [".vue", ".js", ".ts", ".jsx", ".tsx", ".json"],
     "capitalizeTranslations": false,
+    "capitalizeMaxWords": 0,
     "pruneUnusedKeys": false,
     "keyStrategy": {
       "maxLength": 40,
@@ -172,29 +167,40 @@ hias setting
     },
     "appId": "",
     "secretKey": ""
+  },
+  "gitRepoSetting": {
+    "gitRepoAutoUpdate": false,
+    "gitRepoMode": "merge",
+    "gitRepo": {}
   }
 }
 ```
 
 字段说明：
 
-| 字段                     | 默认值               | 说明                                           |
-| ------------------------ | -------------------- | ---------------------------------------------- |
-| `locales`                | `["zh-CN", "en-US"]` | `locales[0]` 为源语言，其余为目标语言          |
-| `outDir`                 | `.hias/lang`         | 语言包和翻译副本输出目录                       |
-| `fallbackToKey`          | `true`               | 翻译失败时是否回退到原文 key                   |
-| `replaceOriginalFile`    | `false`              | 是否直接覆盖源文件                             |
-| `provider`               | `tencent`            | 翻译服务商：`baidu` 或 `tencent`               |
-| `i18nCallTemplate`       | `$t`                 | 替换源码时使用的 i18n 调用                     |
-| `i18nImport`             | `""`                 | 可选导入语句；默认不注入，适合项目使用自动导入 |
-| `extensions`             | `[]`                 | 自定义扫描扩展名；空数组表示全部支持类型       |
-| `capitalizeTranslations` | `false`              | 是否把含拉丁字符的翻译结果首字母大写           |
-| `pruneUnusedKeys`        | `false`              | 是否移除当前命名空间未被源码引用的旧 key       |
-| `keyStrategy.maxLength`  | `40`                 | 自动生成 key 的最大长度                        |
-| `keyStrategy.collision`  | `number`             | key 冲突策略：`number` 或 `hash`               |
-| `keyStrategy.hashLength` | `6`                  | hash 冲突策略的短 hash 长度                    |
-| `appId`                  | `""`                 | 百度 AppId 或腾讯 SecretId                     |
-| `secretKey`              | `""`                 | 百度 SecretKey 或腾讯 SecretKey                |
+| 字段                               | 默认值               | 说明                                                           |
+| ---------------------------------- | -------------------- | -------------------------------------------------------------- |
+| `locales`                          | `["zh-CN", "en-US"]` | `locales[0]` 为源语言，其余为目标语言                          |
+| `outDir`                           | `.hias/lang`         | 语言包和翻译副本输出目录，支持字符串或对象格式                 |
+| `fallbackToKey`                    | `true`               | 翻译失败时是否回退到原文 key                                   |
+| `replaceOriginalFile`              | `false`              | 是否直接覆盖源文件                                             |
+| `provider`                         | `tencent`            | 翻译服务商：`baidu` 或 `tencent`                               |
+| `i18nCallTemplate`                 | `$t`                 | 替换源码时使用的 i18n 调用，支持字符串或数组格式               |
+| `i18nImport`                       | `""`                 | 可选导入语句；支持字符串或数组格式；适用于 Vue/JS/TS/JSX/TSX   |
+| `extensions`                       | `[]`                 | 自定义扫描扩展名；空数组表示全部支持类型                       |
+| `capitalizeTranslations`           | `false`              | 是否把含拉丁字符的翻译结果首字母大写                           |
+| `capitalizeMaxWords`               | `0`                  | 全词大写（Title Case）阈值：仅当 `capitalizeTranslations` 为 `true` 时生效。`0` 表示关闭，仅首词大写；`>0` 且英语译文单词数 ≤ 该值时，每个单词首字母大写（仅限英语目标语言） |
+| `pruneUnusedKeys`                  | `false`              | 是否移除当前命名空间未被源码引用的旧 key                       |
+| `keyStrategy.maxLength`            | `40`                 | 自动生成 key 的最大长度                                        |
+| `keyStrategy.collision`            | `number`             | key 冲突策略：`number` 或 `hash`                               |
+| `keyStrategy.hashLength`           | `6`                  | hash 冲突策略的短 hash 长度                                    |
+| `appId`                            | `""`                 | 百度 AppId 或腾讯 SecretId                                     |
+| `secretKey`                        | `""`                 | 百度 SecretKey 或腾讯 SecretKey                                |
+| `gitRepoSetting.gitRepoAutoUpdate` | `false`              | 创建项目时是否自动拉取远程模板列表（项目级默认关，全局默认开） |
+| `gitRepoSetting.gitRepoMode`       | `"merge"`            | 远程与本地模板冲突策略：`merge`（-new 后缀）或 `cover`（覆盖） |
+| `gitRepoSetting.gitRepo`           | `{}`                 | 自定义模板仓库映射，键为模板名，值为 git 地址                  |
+
+: 此字段位于配置文件根层级的 `gitRepoSetting` 对象内，与 `translationSetting` 同级。
 
 配置读取优先级：
 
@@ -205,8 +211,67 @@ hias setting
 创建全局配置：
 
 ```sh
-hias global-setting
+hias global-config
 ```
+
+## 模板仓库管理
+
+`hias create` 使用的模板列表来自 `gitRepoSetting.gitRepo` 配置。解析优先级：
+
+1. 项目级 `.hias/setting.json` 中的 `gitRepoSetting.gitRepo` 字段
+2. 全局 `~/.hias-cli/config.json` 中的 `gitRepoSetting.gitRepo` 字段
+3. 内置硬编码默认仓库列表（vue2 / vue3 / vue-ts / react 等）
+
+三个层次的 gitRepo 配置按**逐字段级联**方式合并（与翻译配置的整体覆盖不同），项目级最优先。
+
+### 自动更新
+
+```json
+{
+  "translationSetting": {},
+  "gitRepoSetting": {
+    "gitRepoAutoUpdate": true,
+    "gitRepoMode": "merge"
+  }
+}
+```
+
+- `gitRepoSetting.gitRepoAutoUpdate`：创建项目时是否从远程拉取最新模板列表
+  - 全局配置默认 `true`，使所有项目能获取更新
+  - 项目级配置默认 `false`，避免意外网络请求
+- 远程模板列表地址：`https://ansstory.github.io/hias-cli-md/git-storage.json`
+- 网络异常时静默降级到本地配置，不阻塞创建流程
+
+### 冲突策略
+
+`gitRepoSetting.gitRepoMode` 控制本地与远程模板同名冲突时的行为：
+
+| 策略    | 行为                                     |
+| ------- | ---------------------------------------- |
+| `merge` | 本地保留原键，远程冲突键追加 `-new` 后缀 |
+| `cover` | 远程值直接覆盖本地值                     |
+
+示例：本地有 `vue3` → `urlA`，远程有 `vue3` → `urlB`
+
+- merge 模式结果：`{ vue3: urlA, "vue3-new": urlB }`
+- cover 模式结果：`{ vue3: urlB }`
+
+### 自定义模板仓库
+
+在项目或全局配置中设置 `gitRepoSetting.gitRepo`，即可使用自己的模板：
+
+```json
+{
+  "gitRepoSetting": {
+    "gitRepo": {
+      "my-vue-template": "https://gitee.com/my-org/my-vue-template.git",
+      "my-react-template": "https://github.com/my-org/my-react-template.git"
+    }
+  }
+}
+```
+
+支持任意 git 仓库地址，创建时通过 `hias create my-vue-template` 使用。
 
 ## 语言方向
 
@@ -260,6 +325,47 @@ hias global-setting
 
 没有密钥时可以留空。工具会输出警告，然后在 `fallbackToKey: true` 时使用原文回退，迁移结构仍可继续。
 
+## 多项目 outDir 配置
+
+`outDir` 支持字符串或对象格式。对象格式适用于 monorepo 多项目场景：
+
+字符串格式（默认）：
+
+```json
+{
+  "translationSetting": {
+    "outDir": ".hias/lang"
+  }
+}
+```
+
+对象格式（monorepo）：
+
+```json
+{
+  "translationSetting": {
+    "outDir": {
+      "main": "apps/main/src/locale/module",
+      "web": "apps/web/src/locale/module"
+    }
+  }
+}
+```
+
+使用 `-p, --project` 参数指定项目。不指定时默认使用对象中第一个 key：
+
+```sh
+# 默认使用 main（对象中第一个 key）
+hias tf apps/main/src/views/index.vue home
+
+# 指定项目
+hias tf apps/main/src/views/index.vue -p main
+hias tf apps/web/src/views/index.vue home -p web
+
+# tfo 同样支持
+hias tfo apps/main/src/views views -p main
+```
+
 ## 翻译单文件
 
 ```sh
@@ -268,14 +374,15 @@ hias tf src/views/user/index.vue user
 
 常用选项：
 
-| 选项                 | 说明                   |
-| -------------------- | ---------------------- |
-| `-n, --name <name>`  | 指定命名空间           |
-| `--show-extractions` | 只显示取到的源语言文案 |
-| `--dry-run`          | 只预览，不写文件       |
-| `--interactive`      | 预览后询问是否应用     |
-| `--report <file>`    | 输出 JSON 报告         |
-| `-v, --verbose`      | 输出详细日志           |
+| 选项                      | 说明                                   |
+| ------------------------- | -------------------------------------- |
+| `-n, --name <name>`       | 指定命名空间                           |
+| `-p, --project <project>` | outDir 为对象时指定项目                |
+| `--show-extractions`      | 只显示取到的源语言文案                 |
+| `--dry-run`               | 只预览，不写文件                       |
+| `--interactive`           | 预览后询问是否应用                     |
+| `--report <file>`         | 输出 JSON 报告                         |
+| `-v, --verbose`           | 输出详细日志                           |
 
 示例：
 
@@ -616,6 +723,8 @@ hias tci company.xlsx --overwrite
 | 登录     | Login              | ログイン           |
 | 保存成功 | Saved successfully | 保存に成功しました |
 
+> 注意：Excel 仅支持 `.xlsx` / `.xlsm` 格式，不支持旧版二进制 `.xls`，请先在 Excel 中另存为 `.xlsx`。
+
 也支持 TSV/TXT：
 
 ```text
@@ -761,8 +870,8 @@ hias lang -l
 npm install
 npm test
 npm run build
-npm run docs:dev
-npm run docs:build
+npm run doc:dev
+npm run doc:build
 ```
 
 脚本说明：
@@ -772,9 +881,9 @@ npm run docs:build
 | `npm test`                 | 运行 Node.js 测试           |
 | `npm run build`            | 构建 `dist/index.js` 和模板 |
 | `npm run build:obfuscated` | 混淆构建，用于发布          |
-| `npm run docs:dev`         | 启动 VitePress 文档站       |
-| `npm run docs:build`       | 构建文档站                  |
-| `npm run docs:preview`     | 预览文档站构建产物          |
+| `npm run doc:dev`          | 启动 VitePress 文档站       |
+| `npm run doc:build`        | 构建文档站                  |
+| `npm run doc:preview`      | 预览文档站构建产物          |
 
 ## 常见问题
 
