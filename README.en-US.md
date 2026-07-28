@@ -47,6 +47,7 @@ hias clear-config
 | `tfo [folder] [name]`   | -     | Translate files in a folder                  |
 | `tcheck [target]`       | -     | Check source references and locale files     |
 | `cache-import [file]`   | `tci` | Import XLSX/TSV/TXT translations into cache  |
+| `cache-apply [name]`    | `tca` | Apply cached translations to locale JSON     |
 | `codesnippets [ide]`    | -     | Generate IDE code snippets                   |
 | `setting`               | -     | Create project translation config            |
 | `global-config`         | -     | Create global translation config             |
@@ -734,6 +735,36 @@ Cache file:
 ```text
 .hias/.translation-cache.json
 ```
+
+## Apply Cache to Locale Files
+
+When locale files are already generated and you later receive a human-reviewed translation dictionary (especially with `replaceOriginalFile: true`, where source files have been rewritten to `$t()` calls and Chinese text can no longer be re-extracted), import the dictionary with `--overwrite` first, then write the latest cached translations directly back to the locale JSON files under `outDir`:
+
+```sh
+hias tci company.xlsx --overwrite
+hias cache-apply
+hias tca
+```
+
+Preview the translations that would be updated:
+
+```sh
+hias tca --dry-run
+```
+
+Process a single namespace only (a subdirectory under `outDir`):
+
+```sh
+hias tca views
+```
+
+Specify the project when `outDir` is an object:
+
+```sh
+hias tca -p admin
+```
+
+How it works: the source-locale JSON (key → source text) is used as the lookup table. For each key, the source text is looked up in the cache; a value is updated only when the cache hits and the translation differs. All other keys and the JSON structure are preserved, and source files are never touched.
 
 ## Reports
 

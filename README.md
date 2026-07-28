@@ -48,6 +48,7 @@ hias clear-config
 | `tfo [folder] [name]`   | -     | 翻译目录内文件                 |
 | `tcheck [target]`       | -     | 检查源码引用和语言包一致性     |
 | `cache-import [file]`   | `tci` | 导入 XLSX/TSV/TXT 翻译表到缓存 |
+| `cache-apply [name]`    | `tca` | 将缓存译文回写到语言包 JSON   |
 | `codesnippets [ide]`    | -     | 生成 IDE 代码片段              |
 | `setting`               | -     | 创建项目级翻译配置             |
 | `global-config`         | -     | 创建全局翻译配置               |
@@ -738,6 +739,36 @@ zh-CN	en-US	ja-JP
 ```text
 .hias/.translation-cache.json
 ```
+
+## 回写语言包
+
+当语言包已经生成、后续又拿到人工校对的翻译字典时（尤其是 `replaceOriginalFile: true` 下源文件已被 `$t()` 替换、无法重新提取原文的场景），可以先用 `--overwrite` 导入字典，再把缓存中的最新译文直接回写到 `outDir` 下的语言包 JSON：
+
+```sh
+hias tci company.xlsx --overwrite
+hias cache-apply
+hias tca
+```
+
+预览将更新的译文：
+
+```sh
+hias tca --dry-run
+```
+
+只处理指定命名空间（`outDir` 下的子目录名）：
+
+```sh
+hias tca views
+```
+
+`outDir` 为对象格式时指定项目：
+
+```sh
+hias tca -p admin
+```
+
+回写规则：以源语言 JSON（key → 原文）为对照，逐 key 拿原文查缓存，命中且译文有变化才更新，其余键和 JSON 结构原样保留，不会触碰源文件。
 
 ## 报告文件
 
