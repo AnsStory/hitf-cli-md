@@ -153,7 +153,27 @@ Full example:
     "outDir": ".hias/lang",
     "fallbackToKey": true,
     "replaceOriginalFile": false,
-    "provider": "tencent",
+    "translationService": "tencent",
+    "servicePriority": ["tencent", "baidu", "openai", "google"],
+    "services": {
+      "openai": {
+        "apiKey": "",
+        "baseUrl": "https://api.openai.com",
+        "model": "gpt-3.5-turbo"
+      },
+      "google": {
+        "apiKey": ""
+      },
+      "baidu": {
+        "appId": "",
+        "secretKey": ""
+      },
+      "tencent": {
+        "secretId": "",
+        "secretKey": "",
+        "region": "ap-guangzhou"
+      }
+    },
     "i18nCallTemplate": "$t",
     "i18nImport": "",
     "extensions": [".vue", ".js", ".ts", ".jsx", ".tsx", ".json"],
@@ -164,9 +184,7 @@ Full example:
       "maxLength": 40,
       "collision": "number",
       "hashLength": 6
-    },
-    "appId": "",
-    "secretKey": ""
+    }
   },
   "gitRepoSetting": {
     "gitRepoAutoUpdate": false,
@@ -184,7 +202,17 @@ Field reference:
 | `outDir`                           | `.hias/lang`         | Output directory for locale files and translated copies (string or object format)    |
 | `fallbackToKey`                    | `true`               | Fall back to original text when translation fails                                    |
 | `replaceOriginalFile`              | `false`              | Replace source files in place                                                        |
-| `provider`                         | `tencent`            | Translation provider: `baidu` or `tencent`                                           |
+| `translationSetting.translationService` | `tencent`       | Current translation service: `baidu`, `tencent`, `openai`, or `google`               |
+| `translationSetting.servicePriority` | `["tencent", "baidu", "openai", "google"]` | Fallback priority |
+| `translationSetting.services.openai.apiKey` | -             | OpenAI API key                                                                       |
+| `translationSetting.services.openai.baseUrl` | `https://api.openai.com` | Custom API endpoint                                                         |
+| `translationSetting.services.openai.model` | `gpt-3.5-turbo`   | Model name                                                                           |
+| `translationSetting.services.google.apiKey` | -             | Google Cloud Translation API key                                                     |
+| `translationSetting.services.baidu.appId` | -                | Baidu translation app ID                                                             |
+| `translationSetting.services.baidu.secretKey` | -            | Baidu translation secret key                                                         |
+| `translationSetting.services.tencent.secretId` | -            | Tencent Cloud secret ID                                                              |
+| `translationSetting.services.tencent.secretKey` | -           | Tencent Cloud secret key                                                             |
+| `translationSetting.services.tencent.region` | `ap-guangzhou` | Region                                                                              |
 | `i18nCallTemplate`                 | `$t`                 | i18n call used during replacement, supports string or array format                   |
 | `i18nImport`                       | `""`                 | Optional import injection; supports string or array format; works with Vue/JS/TS/JSX |
 | `extensions`                       | `[]`                 | Custom extensions; empty means all supported types                                   |
@@ -194,8 +222,6 @@ Field reference:
 | `keyStrategy.maxLength`            | `40`                 | Maximum generated key length                                                         |
 | `keyStrategy.collision`            | `number`             | Key collision strategy: `number` or `hash`                                           |
 | `keyStrategy.hashLength`           | `6`                  | Short hash length for the hash collision strategy                                    |
-| `appId`                            | `""`                 | Baidu AppId or Tencent SecretId                                                      |
-| `secretKey`                        | `""`                 | Baidu SecretKey or Tencent SecretKey                                                 |
 | `gitRepoSetting.gitRepoAutoUpdate` | `false`              | Auto-fetch remote template list on `create` (project default off, global default on) |
 | `gitRepoSetting.gitRepoMode`       | `"merge"`            | Conflict strategy: `merge` (-new suffix) or `cover` (overwrite)                      |
 | `gitRepoSetting.gitRepo`           | `{}`                 | Custom template repo map: template name → git URL                                    |
@@ -296,29 +322,53 @@ English source, generate Chinese and Japanese:
 
 ## Translation Providers
 
-Baidu Translate:
+hias-cli supports multiple translation services, including Tencent Cloud, Baidu, OpenAI (GPT), and Google Translate.
+
+### Configuration Structure
 
 ```json
 {
   "translationSetting": {
-    "provider": "baidu",
-    "appId": "your_baidu_app_id",
-    "secretKey": "your_baidu_secret_key"
+    "translationService": "tencent",
+    "servicePriority": ["tencent", "baidu", "openai", "google"],
+    "services": {
+      "openai": {
+        "apiKey": "sk-xxxxxxxx",
+        "baseUrl": "https://api.openai.com",
+        "model": "gpt-3.5-turbo"
+      },
+      "google": {
+        "apiKey": "your-google-api-key"
+      },
+      "baidu": {
+        "appId": "your-app-id",
+        "secretKey": "your-secret-key"
+      },
+      "tencent": {
+        "secretId": "your-secret-id",
+        "secretKey": "your-secret-key",
+        "region": "ap-guangzhou"
+      }
+    }
   }
 }
 ```
 
-Tencent Cloud TMT:
+### Configuration Fields
 
-```json
-{
-  "translationSetting": {
-    "provider": "tencent",
-    "appId": "your_tencent_secret_id",
-    "secretKey": "your_tencent_secret_key"
-  }
-}
-```
+| Field | Description | Default |
+|-------|-------------|---------|
+| `translationService` | Current translation service | `tencent` |
+| `servicePriority` | Fallback priority | `["tencent", "baidu", "openai", "google"]` |
+| `services.openai.apiKey` | OpenAI API key | - |
+| `services.openai.baseUrl` | Custom API endpoint | `https://api.openai.com` |
+| `services.openai.model` | Model name | `gpt-3.5-turbo` |
+| `services.google.apiKey` | Google Cloud Translation API key | - |
+| `services.baidu.appId` | Baidu translation app ID | - |
+| `services.baidu.secretKey` | Baidu translation secret key | - |
+| `services.tencent.secretId` | Tencent Cloud secret ID | - |
+| `services.tencent.secretKey` | Tencent Cloud secret key | - |
+| `services.tencent.region` | Region | `ap-guangzhou` |
 
 You can leave credentials empty. The CLI prints a warning and, when `fallbackToKey` is `true`, falls back to original text so the migration can still proceed.
 
@@ -738,18 +788,16 @@ Cache file:
 
 ## Apply Cache to Locale Files
 
-When locale files are already generated and you later receive a human-reviewed translation dictionary (especially with `replaceOriginalFile: true`, where source files have been rewritten to `$t()` calls and Chinese text can no longer be re-extracted), import the dictionary with `--overwrite` first, then write the latest cached translations directly back to the locale JSON files under `outDir`:
+`cache-apply` (short command `tca`) writes translation results to locale JSON files under `outDir`. It checks the cache first; for cache misses, it automatically calls the translation API and caches the results.
+
+Use cases:
+- `replaceOriginalFile: true` mode: source files have been rewritten to `$t()` calls, re-running `tf` / `tfo` can no longer extract Chinese text
+- Translation service switch: need to re-translate uncached entries after changing API provider
+- Post-network recovery: re-translate entries that previously failed due to network issues
 
 ```sh
-hias tci company.xlsx --overwrite
 hias cache-apply
 hias tca
-```
-
-Preview the translations that would be updated:
-
-```sh
-hias tca --dry-run
 ```
 
 Process a single namespace only (a subdirectory under `outDir`):
@@ -763,8 +811,6 @@ Specify the project when `outDir` is an object:
 ```sh
 hias tca -p admin
 ```
-
-How it works: the source-locale JSON (key → source text) is used as the lookup table. For each key, the source text is looked up in the cache; a value is updated only when the cache hits and the translation differs. All other keys and the JSON structure are preserved, and source files are never touched.
 
 ## Reports
 

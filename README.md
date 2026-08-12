@@ -154,7 +154,27 @@ hias setting
     "outDir": ".hias/lang",
     "fallbackToKey": true,
     "replaceOriginalFile": false,
-    "provider": "tencent",
+    "translationService": "tencent",
+    "servicePriority": ["tencent", "baidu", "openai", "google"],
+    "services": {
+      "openai": {
+        "apiKey": "",
+        "baseUrl": "https://api.openai.com",
+        "model": "gpt-3.5-turbo"
+      },
+      "google": {
+        "apiKey": ""
+      },
+      "baidu": {
+        "appId": "",
+        "secretKey": ""
+      },
+      "tencent": {
+        "secretId": "",
+        "secretKey": "",
+        "region": "ap-guangzhou"
+      }
+    },
     "i18nCallTemplate": "$t",
     "i18nImport": "",
     "extensions": [".vue", ".js", ".ts", ".jsx", ".tsx", ".json"],
@@ -165,9 +185,7 @@ hias setting
       "maxLength": 40,
       "collision": "number",
       "hashLength": 6
-    },
-    "appId": "",
-    "secretKey": ""
+    }
   },
   "gitRepoSetting": {
     "gitRepoAutoUpdate": false,
@@ -185,7 +203,17 @@ hias setting
 | `outDir`                           | `.hias/lang`         | 语言包和翻译副本输出目录，支持字符串或对象格式                 |
 | `fallbackToKey`                    | `true`               | 翻译失败时是否回退到原文 key                                   |
 | `replaceOriginalFile`              | `false`              | 是否直接覆盖源文件                                             |
-| `provider`                         | `tencent`            | 翻译服务商：`baidu` 或 `tencent`                               |
+| `translationSetting.translationService` | `tencent`       | 当前使用的翻译服务：`baidu`、`tencent`、`openai` 或 `google`   |
+| `translationSetting.servicePriority` | `["tencent", "baidu", "openai", "google"]` | 故障转移优先级 |
+| `translationSetting.services.openai.apiKey` | -             | OpenAI API 密钥                                                |
+| `translationSetting.services.openai.baseUrl` | `https://api.openai.com` | 自定义 API 端点                                        |
+| `translationSetting.services.openai.model` | `gpt-3.5-turbo`   | 模型名称                                                       |
+| `translationSetting.services.google.apiKey` | -             | Google Cloud Translation API 密钥                              |
+| `translationSetting.services.baidu.appId` | -                | 百度翻译应用 ID                                                |
+| `translationSetting.services.baidu.secretKey` | -            | 百度翻译密钥                                                   |
+| `translationSetting.services.tencent.secretId` | -            | 腾讯云密钥 ID                                                  |
+| `translationSetting.services.tencent.secretKey` | -           | 腾讯云密钥                                                     |
+| `translationSetting.services.tencent.region` | `ap-guangzhou` | 区域                                                          |
 | `i18nCallTemplate`                 | `$t`                 | 替换源码时使用的 i18n 调用，支持字符串或数组格式               |
 | `i18nImport`                       | `""`                 | 可选导入语句；支持字符串或数组格式；适用于 Vue/JS/TS/JSX/TSX   |
 | `extensions`                       | `[]`                 | 自定义扫描扩展名；空数组表示全部支持类型                       |
@@ -195,8 +223,6 @@ hias setting
 | `keyStrategy.maxLength`            | `40`                 | 自动生成 key 的最大长度                                        |
 | `keyStrategy.collision`            | `number`             | key 冲突策略：`number` 或 `hash`                               |
 | `keyStrategy.hashLength`           | `6`                  | hash 冲突策略的短 hash 长度                                    |
-| `appId`                            | `""`                 | 百度 AppId 或腾讯 SecretId                                     |
-| `secretKey`                        | `""`                 | 百度 SecretKey 或腾讯 SecretKey                                |
 | `gitRepoSetting.gitRepoAutoUpdate` | `false`              | 创建项目时是否自动拉取远程模板列表（项目级默认关，全局默认开） |
 | `gitRepoSetting.gitRepoMode`       | `"merge"`            | 远程与本地模板冲突策略：`merge`（-new 后缀）或 `cover`（覆盖） |
 | `gitRepoSetting.gitRepo`           | `{}`                 | 自定义模板仓库映射，键为模板名，值为 git 地址                  |
@@ -300,29 +326,53 @@ hias global-config
 
 ## 翻译服务商
 
-百度翻译：
+hias-cli 支持多种翻译服务，包括腾讯云、百度、OpenAI (GPT) 和谷歌翻译。
+
+### 配置结构
 
 ```json
 {
   "translationSetting": {
-    "provider": "baidu",
-    "appId": "your_baidu_app_id",
-    "secretKey": "your_baidu_secret_key"
+    "translationService": "tencent",
+    "servicePriority": ["tencent", "baidu", "openai", "google"],
+    "services": {
+      "openai": {
+        "apiKey": "sk-xxxxxxxx",
+        "baseUrl": "https://api.openai.com",
+        "model": "gpt-3.5-turbo"
+      },
+      "google": {
+        "apiKey": "your-google-api-key"
+      },
+      "baidu": {
+        "appId": "your-app-id",
+        "secretKey": "your-secret-key"
+      },
+      "tencent": {
+        "secretId": "your-secret-id",
+        "secretKey": "your-secret-key",
+        "region": "ap-guangzhou"
+      }
+    }
   }
 }
 ```
 
-腾讯云 TMT：
+### 配置字段说明
 
-```json
-{
-  "translationSetting": {
-    "provider": "tencent",
-    "appId": "your_tencent_secret_id",
-    "secretKey": "your_tencent_secret_key"
-  }
-}
-```
+| 字段 | 说明 | 默认值 |
+|------|------|--------|
+| `translationService` | 当前使用的翻译服务 | `tencent` |
+| `servicePriority` | 故障转移优先级 | `["tencent", "baidu", "openai", "google"]` |
+| `services.openai.apiKey` | OpenAI API 密钥 | - |
+| `services.openai.baseUrl` | 自定义 API 端点 | `https://api.openai.com` |
+| `services.openai.model` | 模型名称 | `gpt-3.5-turbo` |
+| `services.google.apiKey` | Google Cloud Translation API 密钥 | - |
+| `services.baidu.appId` | 百度翻译应用 ID | - |
+| `services.baidu.secretKey` | 百度翻译密钥 | - |
+| `services.tencent.secretId` | 腾讯云密钥 ID | - |
+| `services.tencent.secretKey` | 腾讯云密钥 | - |
+| `services.tencent.region` | 区域 | `ap-guangzhou` |
 
 没有密钥时可以留空。工具会输出警告，然后在 `fallbackToKey: true` 时使用原文回退，迁移结构仍可继续。
 
@@ -742,18 +792,16 @@ zh-CN	en-US	ja-JP
 
 ## 回写语言包
 
-当语言包已经生成、后续又拿到人工校对的翻译字典时（尤其是 `replaceOriginalFile: true` 下源文件已被 `$t()` 替换、无法重新提取原文的场景），可以先用 `--overwrite` 导入字典，再把缓存中的最新译文直接回写到 `outDir` 下的语言包 JSON：
+`cache-apply`（短命令 `tca`）用于将翻译结果写入 `outDir` 下的语言包 JSON。工作逻辑：缓存命中直接使用，未命中自动调用翻译 API 翻译。
+
+适用场景：
+- `replaceOriginalFile: true` 模式下源文件已被 `$t()` 替换，无法重新提取原文
+- 翻译服务商切换后需要重新翻译未缓存的条目
+- 网络恢复后补翻之前失败的条目
 
 ```sh
-hias tci company.xlsx --overwrite
 hias cache-apply
 hias tca
-```
-
-预览将更新的译文：
-
-```sh
-hias tca --dry-run
 ```
 
 只处理指定命名空间（`outDir` 下的子目录名）：
@@ -767,8 +815,6 @@ hias tca views
 ```sh
 hias tca -p admin
 ```
-
-回写规则：以源语言 JSON（key → 原文）为对照，逐 key 拿原文查缓存，命中且译文有变化才更新，其余键和 JSON 结构原样保留，不会触碰源文件。
 
 ## 报告文件
 
