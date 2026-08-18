@@ -1,11 +1,11 @@
 {
-  "vue2": "https://gitee.com/AnsStory/hias-vue2-template.git",
-  "vue3": "https://gitee.com/AnsStory/hias-vue3-template.git",
-  "vue-ts": "https://gitee.com/AnsStory/hias-vue-ts-template.git",
-  "uni-vite": "https://gitee.com/AnsStory/hias-uni-vite.git",
-  "nuxt-web": "https://gitee.com/AnsStory/hias-nuxt-web-tmp.git",
-  "vue-screen": "https://gitee.com/AnsStory/hias-vite-screen.git",
-  "react": "https://gitee.com/AnsStory/hias-react-template.git",
-  "react-ts": "https://gitee.com/AnsStory/hias-react-ts-template.git",
+  "vue2": "https://gitee.com/AnsStory/hitf-vue2-template.git",
+  "vue3": "https://gitee.com/AnsStory/hitf-vue3-template.git",
+  "vue-ts": "https://gitee.com/AnsStory/hitf-vue-ts-template.git",
+  "uni-vite": "https://gitee.com/AnsStory/hitf-uni-vite.git",
+  "nuxt-web": "https://gitee.com/AnsStory/hitf-nuxt-web-tmp.git",
+  "vue-screen": "https://gitee.com/AnsStory/hitf-vite-screen.git",
+  "react": "https://gitee.com/AnsStory/hitf-react-template.git",
+  "react-ts": "https://gitee.com/AnsStory/hitf-react-ts-template.git",
   "pnpm-monorepo": ""
 }
