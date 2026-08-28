@@ -18,6 +18,8 @@ npm install -g @ansstory/hitf
 | `hitf tf <file> [name]` | | Translate a single file and generate locale JSON |
 | `hitf tfo <folder> [name]` | | Recursively translate an entire folder |
 | `hitf tcheck [target]` | | Check i18n references against locale files |
+| `hitf export-source <file>` | `tes` | Extract unique source texts from code and export to XLSX |
+| `hitf export-translated [file]` | `etr` | Read texts from translated locale JSON and export to XLSX |
 | `hitf cache-import <file>` | `tci` | Import a TSV/XLSX translation table into local cache |
 | `hitf cache-apply [name]` | `tca` | Write cached translations back to locale JSON |
 | `hitf rollback` | | Undo the last translation operation |
@@ -140,6 +142,12 @@ Run `hitf setting` to generate `.hitf/setting.json` at project root:
 
 #### Tencent Translate
 
+**Setup Steps:**
+
+1. Open [Tencent Cloud Console](https://console.cloud.tencent.com/cam/capi) and log in
+2. Click【Create Key】to generate a SecretId and SecretKey pair
+3. Copy and paste them into the configuration
+
 ```json
 {
   "tencent": {
@@ -150,7 +158,16 @@ Run `hitf setting` to generate `.hitf/setting.json` at project root:
 }
 ```
 
+**Pricing:** 5 million characters free per month, then ¥58/million characters.
+
 #### Baidu Translate
+
+**Setup Steps:**
+
+1. Open [Baidu Translate Open Platform](https://fanyi-api.baidu.com/) and log in with your Baidu account
+2. Click【Console】and register as a developer (select "Individual Developer")
+3. Enable "General Translation Service" and choose the Standard plan
+4. Get your APP ID and Secret Key from the bottom of the console
 
 ```json
 {
@@ -161,7 +178,18 @@ Run `hitf setting` to generate `.hitf/setting.json` at project root:
 }
 ```
 
+**Pricing:** Standard plan: 50,000 free characters/month. After identity verification, upgrade to Advanced: 1 million free characters/month. Overage: ¥49/million characters.
+
 #### OpenAI
+
+**Setup Steps:**
+
+1. Visit [OpenAI Platform](https://platform.openai.com/) and create an account
+2. Go to [API Keys page](https://platform.openai.com/account/api-keys)
+3. Click【Create new secret key】
+4. Copy the key into the configuration
+
+> Note: OpenAI requires a network proxy from mainland China. No free tier available; a foreign credit card is required.
 
 ```json
 {
@@ -173,7 +201,21 @@ Run `hitf setting` to generate `.hitf/setting.json` at project root:
 }
 ```
 
+**Recommended Models & Pricing:**
+
+| Model | Input Price | Output Price |
+|-------|-------------|--------------|
+| gpt-4o-mini | $0.15/M tokens | $0.60/M tokens |
+| gpt-4o | $2.50/M tokens | $10.00/M tokens |
+
 #### Google Translate
+
+**Setup Steps:**
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable Cloud Translation API
+4. Create an API Key and copy it
 
 ```json
 {
@@ -183,7 +225,18 @@ Run `hitf setting` to generate `.hitf/setting.json` at project root:
 }
 ```
 
+**Pricing:** 500,000 free characters per month, then $20/million characters.
+
 ## Translation Cache
+
+### Export source texts
+
+```bash
+hitf export-source src/views      # Extract from source code
+hitf export-translated            # Read from translated locale JSONs
+```
+
+Both commands share the same output file `source-texts-<locale>.xlsx` with incremental merge and deduplication. They automatically fill all locale columns based on `locales` configuration. Missing translations are attempted via translation API (left empty if API is not configured). The output format is compatible with `cache-import`.
 
 ### Import company translation table
 
@@ -191,7 +244,7 @@ Run `hitf setting` to generate `.hitf/setting.json` at project root:
 hitf cache-import translations.xlsx -s zh-CN
 ```
 
-Supports `.tsv` and `.xlsx` formats. Imported translations are cached locally and reused without API calls.
+Supports `.xlsx` format. Imported translations are cached locally and reused without API calls.
 
 ### Apply cache to locale files
 

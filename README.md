@@ -18,6 +18,8 @@ npm install -g @ansstory/hitf
 | `hitf tf <file> [name]` | | 翻译单个文件，提取中文并生成语言包 |
 | `hitf tfo <folder> [name]` | | 递归翻译整个文件夹 |
 | `hitf tcheck [target]` | | 检查 i18n 引用与语言文件的一致性 |
+| `hitf export-source <file>` | `tes` | 从源码提取唯一源语言文本并导出为 XLSX |
+| `hitf export-translated [file]` | `etr` | 从已翻译的语言包 JSON 读取文本并导出为 XLSX |
 | `hitf cache-import <file>` | `tci` | 导入公司 TSV/XLSX 翻译表到本地缓存 |
 | `hitf cache-apply [name]` | `tca` | 将缓存译文回写到语言包 JSON |
 | `hitf rollback` | | 回滚上一次翻译操作 |
@@ -140,6 +142,12 @@ Translation check summary
 
 #### 腾讯翻译
 
+**申请步骤：**
+
+1. 打开 [腾讯云控制台](https://console.cloud.tencent.com/cam/capi)，登录你的腾讯云账号
+2. 点击【新建密钥】，创建一对 SecretId 和 SecretKey
+3. 复制 SecretId 和 SecretKey 填入配置文件
+
 ```json
 {
   "tencent": {
@@ -150,7 +158,16 @@ Translation check summary
 }
 ```
 
+**价格：** 每月前 500 万字符免费，超出部分 58 元/百万字符。
+
 #### 百度翻译
+
+**申请步骤：**
+
+1. 打开 [百度翻译开放平台](https://fanyi-api.baidu.com/)，登录百度账号
+2. 点击【管理控制台】，注册成为开发者（选择「个人开发者」）
+3. 开通「通用翻译服务」，选择标准版
+4. 在控制台底部获取 APP ID 和密钥
 
 ```json
 {
@@ -161,7 +178,18 @@ Translation check summary
 }
 ```
 
+**价格：** 标准版每月 5 万免费字符；完成个人认证后可切换高级版，每月 100 万免费字符。超出部分 49 元/百万字符。
+
 #### OpenAI
+
+**申请步骤：**
+
+1. 访问 [OpenAI 官网](https://platform.openai.com/) 注册账号
+2. 打开 [API Keys 页面](https://platform.openai.com/account/api-keys)
+3. 点击【Create new secret key】创建密钥
+4. 复制密钥填入配置文件
+
+> 注意：OpenAI 无法从国内直接访问，需要配置网络环境。无免费额度，需绑定国外信用卡使用。
 
 ```json
 {
@@ -173,7 +201,21 @@ Translation check summary
 }
 ```
 
+**推荐模型与价格：**
+
+| 模型 | 输入价格 | 输出价格 |
+|------|----------|----------|
+| gpt-4o-mini | $0.15/百万 token | $0.60/百万 token |
+| gpt-4o | $2.50/百万 token | $10.00/百万 token |
+
 #### Google Translate
+
+**申请步骤：**
+
+1. 打开 [Google Cloud Console](https://console.cloud.google.com/)
+2. 创建一个新项目或选择已有项目
+3. 启用 Cloud Translation API
+4. 创建 API Key 并复制
 
 ```json
 {
@@ -183,7 +225,18 @@ Translation check summary
 }
 ```
 
+**价格：** 每月前 50 万字符免费，超出部分 $20/百万字符。
+
 ## 翻译缓存
+
+### 导出源语言文本
+
+```bash
+hitf export-source src/views      # 从源码提取
+hitf export-translated            # 从已翻译语言包读取
+```
+
+两个命令共享同一输出文件 `source-texts-<locale>.xlsx`，增量合并去重。根据 `locales` 配置自动填充多列，缺失翻译的列会尝试调用翻译 API 补全（API 未配置则留空）。输出格式兼容 `cache-import`。
 
 ### 导入公司翻译表
 
@@ -191,7 +244,7 @@ Translation check summary
 hitf cache-import translations.xlsx -s zh-CN
 ```
 
-支持 `.tsv` 和 `.xlsx` 格式，导入后本地缓存可直接复用，无需重复调用 API。
+支持 `.xlsx` 格式，导入后本地缓存可直接复用，无需重复调用 API。
 
 ### 应用缓存到语言包
 
