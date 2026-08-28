@@ -27,7 +27,7 @@ npm install -g @ansstory/hitf
 | `hitf global-config` | | 生成全局配置文件 |
 | `hitf lang [language]` | | 切换 CLI 界面语言（zh-CN / en） |
 | `hitf codesnippets [ide]` | | 生成 IDE i18n 忽略注释片段 |
-| `hitf gitignore` | | 将 `.hitf` 添加到 `.gitignore` |
+| `hitf gitignore` | | 将 `.hitf/services.json` 添加到 `.gitignore` |
 
 ## 通用参数
 
@@ -40,7 +40,7 @@ npm install -g @ansstory/hitf
 | `--report <file>` | `-r` | 输出 JSON 报告文件 |
 | `--verbose` | `-v` | 详细输出，显示每个文件的日志 |
 
-## 快速开始
+## 翻译工作流
 
 ### 翻译单个文件
 
@@ -100,13 +100,63 @@ Translation check summary
     src/App.vue:3:9
 ```
 
-## 配置
+### 回滚操作
 
-运行 `hitf setting` 在项目根目录生成 `.hitf/setting.json`：
+```bash
+hitf rollback -l          # 查看可用备份
+hitf rollback              # 回滚最近一次
+hitf rollback -n xxx       # 回滚指定备份
+hitf rollback -k 5         # 仅保留最近 5 个备份
+```
+
+## 翻译缓存管理
+
+### 导出源语言文本
+
+```bash
+hitf export-source src/views      # 从源码提取
+hitf export-translated            # 从已翻译语言包读取
+```
+
+两个命令共享同一输出文件 `source-texts-<locale>.xlsx`，增量合并去重。根据 `locales` 配置自动填充多列，缺失翻译的列会尝试调用翻译 API 补全（API 未配置则留空）。输出格式兼容 `cache-import`。
+
+### 导入公司翻译表
+
+```bash
+hitf cache-import translations.xlsx -s zh-CN
+```
+
+支持 `.xlsx` 格式，导入后本地缓存可直接复用，无需重复调用 API。
+
+### 应用缓存到语言包
+
+```bash
+hitf cache-apply
+```
+
+将缓存中的最新译文写回 `.hitf/lang/` 下的语言包 JSON 文件。
+
+## 配置与设置
+
+### 全局配置
+
+```bash
+hitf global-config
+```
+
+生成全局配置文件，用于设置默认翻译服务、API 密钥等。
+
+### 项目配置
+
+```bash
+hitf setting
+```
+
+在项目根目录生成 `.hitf/setting.json`：
 
 ```json
 {
-  "$schema": "https://ansstory.github.io/hitf-cli-md/schema_setting.json",
+  "$schema": "https://www.schemastore.org/hias-hitf.json",
   "translationSetting": {
     "locales": ["zh-CN", "en-US"],
     "outDir": ".hitf/lang",
@@ -227,41 +277,14 @@ Translation check summary
 
 **价格：** 每月前 50 万字符免费，超出部分 $20/百万字符。
 
-## 翻译缓存
-
-### 导出源语言文本
+### IDE 代码片段
 
 ```bash
-hitf export-source src/views      # 从源码提取
-hitf export-translated            # 从已翻译语言包读取
+hitf codesnippets        # 自动检测 IDE
+hitf codesnippets vscode # 手动指定
 ```
 
-两个命令共享同一输出文件 `source-texts-<locale>.xlsx`，增量合并去重。根据 `locales` 配置自动填充多列，缺失翻译的列会尝试调用翻译 API 补全（API 未配置则留空）。输出格式兼容 `cache-import`。
-
-### 导入公司翻译表
-
-```bash
-hitf cache-import translations.xlsx -s zh-CN
-```
-
-支持 `.xlsx` 格式，导入后本地缓存可直接复用，无需重复调用 API。
-
-### 应用缓存到语言包
-
-```bash
-hitf cache-apply
-```
-
-将缓存中的最新译文写回 `.hitf/lang/` 下的语言包 JSON 文件。
-
-### 回滚操作
-
-```bash
-hitf rollback -l          # 查看可用备份
-hitf rollback              # 回滚最近一次
-hitf rollback -n xxx       # 回滚指定备份
-hitf rollback -k 5         # 仅保留最近 5 个备份
-```
+支持 VS Code、WebStorm、Cursor、Sublime Text。
 
 ## 忽略注释
 
@@ -283,15 +306,6 @@ hitf rollback -k 5         # 仅保留最近 5 个备份
 // @hitf-i18n-ignore-file
 const msg = '整个文件跳过翻译'
 ```
-
-生成 IDE 代码片段：
-
-```bash
-hitf codesnippets        # 自动检测 IDE
-hitf codesnippets vscode # 手动指定
-```
-
-支持 VS Code、WebStorm、Cursor、Sublime Text。
 
 ## CLI 语言切换
 

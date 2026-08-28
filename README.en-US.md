@@ -27,7 +27,7 @@ npm install -g @ansstory/hitf
 | `hitf global-config` | | Generate a global config file |
 | `hitf lang [language]` | | Switch CLI interface language (zh-CN / en) |
 | `hitf codesnippets [ide]` | | Generate IDE i18n-ignore comment snippets |
-| `hitf gitignore` | | Add `.hitf` to `.gitignore` |
+| `hitf gitignore` | | Add `.hitf/services.json` to `.gitignore` |
 
 ## Common Options
 
@@ -40,7 +40,7 @@ npm install -g @ansstory/hitf
 | `--report <file>` | `-r` | Output JSON report file |
 | `--verbose` | `-v` | Verbose output with individual file logs |
 
-## Quick Start
+## Translation Workflow
 
 ### Translate a single file
 
@@ -100,13 +100,63 @@ Translation check summary
     src/App.vue:3:9
 ```
 
-## Configuration
+### Rollback
 
-Run `hitf setting` to generate `.hitf/setting.json` at project root:
+```bash
+hitf rollback -l          # List available backups
+hitf rollback              # Rollback the latest
+hitf rollback -n xxx       # Rollback a specific backup
+hitf rollback -k 5         # Keep only 5 most recent backups
+```
+
+## Translation Cache Management
+
+### Export source texts
+
+```bash
+hitf export-source src/views      # Extract from source code
+hitf export-translated            # Read from translated locale JSONs
+```
+
+Both commands share the same output file `source-texts-<locale>.xlsx` with incremental merge and deduplication. They automatically fill all locale columns based on `locales` configuration. Missing translations are attempted via translation API (left empty if API is not configured). The output format is compatible with `cache-import`.
+
+### Import company translation table
+
+```bash
+hitf cache-import translations.xlsx -s zh-CN
+```
+
+Supports `.xlsx` format. Imported translations are cached locally and reused without API calls.
+
+### Apply cache to locale files
+
+```bash
+hitf cache-apply
+```
+
+Writes the latest cached translations back to locale JSON files under `.hitf/lang/`.
+
+## Configuration & Setup
+
+### Global configuration
+
+```bash
+hitf global-config
+```
+
+Generates a global config file for setting default translation services, API keys, etc.
+
+### Project configuration
+
+```bash
+hitf setting
+```
+
+Generates `.hitf/setting.json` at project root:
 
 ```json
 {
-  "$schema": "https://ansstory.github.io/hitf-cli-md/schema_setting.json",
+  "$schema": "https://www.schemastore.org/hias-hitf.json",
   "translationSetting": {
     "locales": ["zh-CN", "en-US"],
     "outDir": ".hitf/lang",
@@ -227,41 +277,14 @@ Run `hitf setting` to generate `.hitf/setting.json` at project root:
 
 **Pricing:** 500,000 free characters per month, then $20/million characters.
 
-## Translation Cache
-
-### Export source texts
+### IDE Code Snippets
 
 ```bash
-hitf export-source src/views      # Extract from source code
-hitf export-translated            # Read from translated locale JSONs
+hitf codesnippets        # auto-detect IDE
+hitf codesnippets vscode # manual selection
 ```
 
-Both commands share the same output file `source-texts-<locale>.xlsx` with incremental merge and deduplication. They automatically fill all locale columns based on `locales` configuration. Missing translations are attempted via translation API (left empty if API is not configured). The output format is compatible with `cache-import`.
-
-### Import company translation table
-
-```bash
-hitf cache-import translations.xlsx -s zh-CN
-```
-
-Supports `.xlsx` format. Imported translations are cached locally and reused without API calls.
-
-### Apply cache to locale files
-
-```bash
-hitf cache-apply
-```
-
-Writes the latest cached translations back to locale JSON files under `.hitf/lang/`.
-
-### Rollback
-
-```bash
-hitf rollback -l          # List available backups
-hitf rollback              # Rollback the latest
-hitf rollback -n xxx       # Rollback a specific backup
-hitf rollback -k 5         # Keep only 5 most recent backups
-```
+Supports VS Code, WebStorm, Cursor, and Sublime Text.
 
 ## Ignore Comments
 
@@ -283,15 +306,6 @@ Add comments in source to skip specific text extraction:
 // @hitf-i18n-ignore-file
 const msg = 'entire file is skipped'
 ```
-
-Generate IDE code snippets for these comments:
-
-```bash
-hitf codesnippets        # auto-detect IDE
-hitf codesnippets vscode # manual selection
-```
-
-Supports VS Code, WebStorm, Cursor, and Sublime Text.
 
 ## CLI Language
 
